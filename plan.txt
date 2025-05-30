@@ -1,0 +1,5 @@
+
+
+
+1. Class for containing all camera control options, which are exposed to end user
+2. Class for controlling camera element construction
