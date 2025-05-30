@@ -7,7 +7,8 @@
     "scripts": {
         "build": "tsc",
         "watch": "tsc --watch",
-        "browser": "esbuild dist/index.js --bundle --outfile=dist/bundle.js --format=esm"
+        "browser": "esbuild dist/index.js --bundle --outfile=dist/bundle.js --format=esm",
+        "dev": "concurrently \"npm run watch\" \"esbuild dist/index.js --bundle --outfile=dist/bundle.js --format=esm --watch\""
     },
     "keywords": [],
     "author": "",
@@ -15,7 +16,8 @@
     "devDependencies": {
         "@types/node": "^20.0.0",
         "typescript": "^5.0.0",
-        "esbuild": "^0.19.0"
+        "esbuild": "^0.19.0",
+        "concurrently": "^8.2.2"
     },
     "dependencies": {
         "zxing-wasm": "^2.1.2"

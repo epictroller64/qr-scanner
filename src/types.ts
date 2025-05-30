@@ -3,3 +3,8 @@ export type CameraItem = {
     groupId: string
     label: string
 }
+
+
+export type CameraConfig = {
+    fps: number
+}
