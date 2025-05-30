@@ -1,4 +1,5 @@
 import { CameraError } from "./errors";
+import { ScannerAPI } from "./scannerApi";
 import { CameraItem } from "./types";
 
 // Camera API
@@ -16,6 +17,8 @@ export class Camera {
     public isRunning: boolean = false;
     public containerElement: HTMLElement | null = null;
     public parentElement: HTMLElement | null = null;
+    private canvasElement: HTMLCanvasElement | null = null;
+    private scannerApi: ScannerAPI;
 
 
     constructor(elementId: string) {
@@ -26,6 +29,8 @@ export class Camera {
         // Create container and vide element, make them public
         this.containerElement = this.createContainerElement();
         this.videoElement = this.createVideoElement();
+        this.canvasElement = this.createCanvasElement();
+        this.scannerApi = new ScannerAPI();
     }
 
 
@@ -40,6 +45,17 @@ export class Camera {
         return container;
     }
 
+    createCanvasElement() {
+        const canvas = document.createElement("canvas");
+        canvas.classList.add("camera-canvas");
+        if (!this.containerElement) {
+            throw new CameraError("Container element not found");
+        }
+        this.containerElement.appendChild(canvas);
+        this.canvasElement = canvas;
+        return canvas;
+    }
+
     // Video element is created by API
     createVideoElement() {
         const video = document.createElement("video");
@@ -52,15 +68,6 @@ export class Camera {
         this.containerElement.appendChild(video);
         this.videoElement = video;
         return video;
-    }
-
-    createCamera(elementId: string) {
-        // Create camera element onto given ID
-
-    }
-
-    buildCamera() {
-        // Build camera HTML
     }
 
     async getCameraPermission() {
@@ -109,8 +116,36 @@ export class Camera {
         if (!this.videoElement) {
             throw new CameraError("Video element not found");
         }
+        this.videoElement.onloadedmetadata = () => {
+            if (!this.canvasElement) {
+                throw new CameraError("Canvas element not found");
+            }
+            if (!this.videoElement) {
+                throw new CameraError("Video element not found");
+            }
+            this.canvasElement.width = this.videoElement.videoWidth;
+            this.canvasElement.height = this.videoElement.videoHeight;
+        }
         this.videoElement.srcObject = stream;
+
+        // Run the scanner API loop
+        requestAnimationFrame(() => this.scanLoop());
+
         return stream;
+    }
+
+    scanLoop() {
+        if (!this.isRunning) {
+            return
+        }
+        if (!this.videoElement) {
+            throw new CameraError("Video element not found");
+        }
+        if (!this.canvasElement) {
+            throw new CameraError("Canvas element not found");
+        }
+        this.scannerApi.scanFrame(this.videoElement, this.canvasElement);
+        requestAnimationFrame(() => this.scanLoop());
     }
 
     async getCameras(): Promise<CameraItem[]> {

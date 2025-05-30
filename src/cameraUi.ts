@@ -1,6 +1,6 @@
 import { Camera } from "./camera";
 import { CameraUIError } from "./errors";
-
+import { Logger } from "./logger";
 
 const handlers = {
     onCameraStart: () => {
@@ -23,9 +23,13 @@ export class CameraUI {
     private videoElement: HTMLVideoElement | null = null;
     private cameraListElement: HTMLElement | null = null;
     private controlsElement: HTMLElement | null = null;
+    private logging: boolean = false;
+    private logger: Logger;
 
-    constructor(elementId: string) {
+    constructor(elementId: string, logging: boolean = false) {
         this.elementId = elementId;
+        this.logging = logging;
+        this.logger = new Logger("CameraUI", this.logging);
     }
 
     async buildUi() {
@@ -105,6 +109,7 @@ export class CameraUI {
         if (!this.selectedCameraId) {
             throw new CameraUIError("Selected camera id not found");
         }
+        this.logger.log("Starting camera");
         await this.camera.startCamera(this.selectedCameraId);
     }
 

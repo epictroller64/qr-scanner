@@ -12,4 +12,11 @@ class CameraError extends Error {
         this.name = "CameraError";
     }
 }
-export { CameraUIError, CameraError };
+
+class ScannerAPIError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = "ScannerAPIError";
+    }
+}
+export { CameraUIError, CameraError, ScannerAPIError };
