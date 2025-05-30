@@ -1,5 +1,5 @@
 
-import { readBarcodes } from "zxing-wasm/reader";
+import { readBarcodes, ReadResult } from "zxing-wasm/reader";
 import { ScannerAPIError } from "./errors";
 import { Logger } from "./logger";
 
@@ -11,7 +11,7 @@ export class ScannerAPI {
         this.logger = new Logger("ScannerAPI", true);
     }
 
-    async scanFrame(videoElement: HTMLVideoElement, canvasElement: HTMLCanvasElement) {
+    async scanFrame(videoElement: HTMLVideoElement, canvasElement: HTMLCanvasElement): Promise<ReadResult[] | null> {
         if (!videoElement || !canvasElement) {
             throw new ScannerAPIError("Video element or canvas element not found");
         }
@@ -24,9 +24,11 @@ export class ScannerAPI {
             const imageData = ctx.getImageData(0, 0, canvasElement.width, canvasElement.height);
             const result = await readBarcodes(imageData)
             if (result.length > 0) {
-                console.log(result);
+                this.logger.log(`Found ${result.length} barcodes`);
             }
+            return result;
         }
+        return null;
     }
 
 }

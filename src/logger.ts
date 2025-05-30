@@ -13,4 +13,10 @@ export class Logger {
             console.log(`[${this.name}] ${message}`);
         }
     }
+
+    error(message: string) {
+        if (this.logging) {
+            console.error(`[${this.name}] ${message}`);
+        }
+    }
 }
