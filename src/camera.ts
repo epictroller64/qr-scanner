@@ -1,14 +1,57 @@
 import { CameraError } from "./errors";
 import { CameraItem } from "./types";
 
-
-
+// Camera API
+// Expose:
+// - Start camera
+// - Stop camera
+// - Get cameras
+// - Get camera permission
+// - Get camera stream
+// - Get camera video element
 export class Camera {
 
     private permissionGranted: boolean = false;
-    private videoElement: HTMLVideoElement;
-    constructor(videoElement: HTMLVideoElement) {
-        this.videoElement = videoElement;
+    public videoElement: HTMLVideoElement | null = null;
+    public isRunning: boolean = false;
+    public containerElement: HTMLElement | null = null;
+    public parentElement: HTMLElement | null = null;
+
+
+    constructor(elementId: string) {
+        this.parentElement = document.getElementById(elementId);
+        if (!this.parentElement) {
+            throw new CameraError("Parent element not found");
+        }
+        // Create container and vide element, make them public
+        this.containerElement = this.createContainerElement();
+        this.videoElement = this.createVideoElement();
+    }
+
+
+    createContainerElement() {
+        const container = document.createElement("div");
+        container.classList.add("camera-container");
+        if (!this.parentElement) {
+            throw new CameraError("Parent element not found");
+        }
+        this.parentElement.appendChild(container);
+        this.containerElement = container;
+        return container;
+    }
+
+    // Video element is created by API
+    createVideoElement() {
+        const video = document.createElement("video");
+        video.classList.add("camera-video");
+        video.autoplay = true;
+        video.playsInline = true;
+        if (!this.containerElement) {
+            throw new CameraError("Container element not found");
+        }
+        this.containerElement.appendChild(video);
+        this.videoElement = video;
+        return video;
     }
 
     createCamera(elementId: string) {
@@ -31,13 +74,30 @@ export class Camera {
     }
 
     async stopCamera() {
+        if (!this.videoElement) {
+            throw new CameraError("Video element not found");
+        }
         let stream: MediaStream | null = this.videoElement.srcObject as MediaStream | null;
         if (stream) {
             const tracks = stream.getTracks();
             tracks.forEach(track => track.stop());
             this.videoElement.srcObject = null;
             stream = null;
+            this.isRunning = false;
         }
+        if (!this.parentElement) {
+            throw new CameraError("Parent element not found");
+        }
+        // Remove vide and container elements
+    }
+
+    clearCamera() {
+        if (!this.parentElement) {
+            throw new CameraError("Parent element not found");
+        }
+        this.parentElement.innerHTML = "";
+        this.videoElement = null;
+        this.containerElement = null;
     }
 
     async startCamera(cameraId: string) {
@@ -45,6 +105,11 @@ export class Camera {
             await this.getCameraPermission();
         }
         const stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: cameraId } } });
+        this.isRunning = true;
+        if (!this.videoElement) {
+            throw new CameraError("Video element not found");
+        }
+        this.videoElement.srcObject = stream;
         return stream;
     }
 

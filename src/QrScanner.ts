@@ -1,4 +1,4 @@
-import { CameraUI } from "./cameraElement";
+import { CameraUI } from "./cameraUi";
 
 export class QrScanner {
 
@@ -11,6 +11,12 @@ export class QrScanner {
     async start() {
 
         await this.cameraUi.buildUi();
+    }
+
+    async clear() {
+        if (this.cameraUi) {
+            await this.cameraUi.clear();
+        }
     }
 
 }
