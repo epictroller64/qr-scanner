@@ -25,17 +25,18 @@ export class Camera {
         if (!permission) {
             throw new CameraError("Camera permission not granted");
         }
+        // Kill it instantly
+        permission.getTracks().forEach(track => track.stop());
         this.permissionGranted = true;
     }
 
     async stopCamera() {
-        const stream: MediaStream | null = this.videoElement.srcObject as MediaStream | null;
+        let stream: MediaStream | null = this.videoElement.srcObject as MediaStream | null;
         if (stream) {
             const tracks = stream.getTracks();
             tracks.forEach(track => track.stop());
             this.videoElement.srcObject = null;
-
-            // Destroy itself
+            stream = null;
         }
     }
 

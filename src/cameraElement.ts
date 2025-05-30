@@ -77,6 +77,7 @@ export class CameraUI {
             }
             await this.camera.stopCamera();
             this.videoElement.srcObject = null;
+            this.videoElement.remove()
             this.camera = null;
             this.parentElement.innerHTML = ""
             this.containerElement = null;
