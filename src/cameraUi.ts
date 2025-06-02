@@ -73,10 +73,10 @@ export class CameraUI {
         controls.appendChild(startScanningButton);
         controls.appendChild(stopScanningButton);
         controls.classList.add("camera-controls");
-        if (!this.camera || !this.camera.containerElement) {
+        if (!this.camera || !this.camera.parentElement) {
             throw new CameraUIError("Container element not found");
         }
-        this.camera.containerElement.appendChild(controls);
+        this.camera.parentElement.appendChild(controls);
         this.controlsElement = controls;
     }
 
@@ -94,10 +94,10 @@ export class CameraUI {
             cameraItem.textContent = camera.label;
             cameraListElement.appendChild(cameraItem);
         });
-        if (!this.camera || !this.camera.containerElement) {
+        if (!this.camera || !this.camera.parentElement) {
             throw new CameraUIError("Container element not found");
         }
-        this.camera.containerElement.appendChild(cameraListElement);
+        this.camera.parentElement.appendChild(cameraListElement);
         this.selectedCameraId = cameraList[0].deviceId; // For testing only
         return cameraListElement;
     }

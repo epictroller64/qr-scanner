@@ -117,9 +117,12 @@ export class Camera {
         this.throwIfNull(this.videoElement, "Video element not found");
         this.videoElement.onloadedmetadata = () => {
             this.throwIfNull(this.canvasElement, "Canvas element not found");
+            this.throwIfNull(this.containerElement, "Container element not found");
             this.throwIfNull(this.videoElement, "Video element not found");
             this.canvasElement.width = this.videoElement.videoWidth;
             this.canvasElement.height = this.videoElement.videoHeight;
+            this.containerElement.style.width = `${this.videoElement.videoWidth}px`;
+            this.containerElement.style.height = `${this.videoElement.videoHeight}px`;
             this.scanOverlay.createScanAreaElement();
             this.scanOverlay.toggleScanArea(true);
         }
