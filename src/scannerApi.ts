@@ -1,4 +1,3 @@
-
 import { readBarcodes, ReadResult } from "zxing-wasm/reader";
 import { ScannerAPIError } from "./errors";
 import { Logger } from "./logger";
@@ -16,7 +15,9 @@ export class ScannerAPI {
             throw new ScannerAPIError("Video element or canvas element not found");
         }
         if (videoElement.readyState === videoElement.HAVE_ENOUGH_DATA) {
-            const ctx = canvasElement.getContext("2d");
+            const ctx = canvasElement.getContext("2d", {
+                willReadFrequently: true
+            });
             if (!ctx) {
                 throw new ScannerAPIError("Canvas context not found");
             }
