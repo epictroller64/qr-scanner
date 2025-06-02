@@ -1,6 +1,7 @@
 import { Camera } from "./camera";
 import { CameraUIError } from "./errors";
 import { Logger } from "./logger";
+import "./styling/baseUi.css"
 
 const handlers = {
     onCameraStart: () => {
@@ -86,20 +87,23 @@ export class CameraUI {
             throw new CameraUIError("Camera not found");
         }
         const cameraList = await this.camera.getCameras();
-        const cameraListElement = document.createElement("div");
-        cameraListElement.classList.add("camera-list");
+        const cameraListContainer = document.createElement("div");
+        const cameraListSelect = document.createElement("select");
+        cameraListContainer.classList.add("camera-list");
+        cameraListSelect.classList.add("camera-select");
         cameraList.forEach(camera => {
-            const cameraItem = document.createElement("div");
+            const cameraItem = document.createElement("option");
             cameraItem.classList.add("camera-item");
             cameraItem.textContent = camera.label;
-            cameraListElement.appendChild(cameraItem);
+            cameraListSelect.appendChild(cameraItem);
         });
         if (!this.camera || !this.camera.parentElement) {
             throw new CameraUIError("Container element not found");
         }
-        this.camera.parentElement.appendChild(cameraListElement);
+        this.camera.parentElement.appendChild(cameraListContainer);
+        cameraListContainer.appendChild(cameraListSelect);
         this.selectedCameraId = cameraList[0].deviceId; // For testing only
-        return cameraListElement;
+        return cameraListContainer;
     }
 
     async startCamera() {

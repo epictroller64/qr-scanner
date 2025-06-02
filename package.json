@@ -5,19 +5,24 @@
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "scripts": {
-        "build": "tsc",
-        "watch": "tsc --watch",
-        "browser": "esbuild dist/index.js --bundle --outfile=dist/bundle.js --format=esm",
-        "dev": "concurrently \"npm run watch\" \"esbuild dist/index.js --bundle --outfile=dist/bundle.js --format=esm --watch\""
+        "build": "webpack",
+        "watch": "webpack --watch",
+        "dev": "webpack --watch"
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
     "devDependencies": {
         "@types/node": "^20.0.0",
-        "typescript": "^5.0.0",
+        "concurrently": "^8.2.2",
+        "css-loader": "^7.1.2",
         "esbuild": "^0.19.0",
-        "concurrently": "^8.2.2"
+        "esbuild-css-modules-plugin": "^3.1.5",
+        "style-loader": "^4.0.0",
+        "ts-loader": "^9.5.2",
+        "typescript": "^5.8.3",
+        "webpack": "^5.99.9",
+        "webpack-cli": "^6.0.1"
     },
     "dependencies": {
         "zxing-wasm": "^2.1.2"

@@ -13,14 +13,16 @@
     <button id="start-scanning">Start camera</button>
     <button id="clear-camera">Clear camera</button>
     <script type="module">
-        import { QrScanner } from './dist/bundle.js';
-        const qrScanner = new QrScanner();
+        import { QrScanner } from './dist/main.js';
+        window.addEventListener('DOMContentLoaded', () => {
+            const qrScanner = new QrScanner();
 
-        document.getElementById("start-scanning").addEventListener("click", () => {
-            qrScanner.start();
-        });
-        document.getElementById("clear-camera").addEventListener("click", async () => {
-            await qrScanner.clear();
+            document.getElementById("start-scanning").addEventListener("click", () => {
+                qrScanner.start();
+            });
+            document.getElementById("clear-camera").addEventListener("click", async () => {
+                await qrScanner.clear();
+            });
         });
     </script>
 </body>
