@@ -5,6 +5,7 @@ import { Logger } from "./logger";
 import { CameraItem } from "./types";
 import { CameraUI } from "./CameraUI";
 import { ScannerAPI } from "./ScannerAPI";
+import { posix } from "path";
 
 export type CameraHandlers = {
     onScanSuccess: (result: ReadResult[]) => void;
@@ -112,7 +113,7 @@ export class Camera {
         this.throwIfNull(this.ui.videoElement, "Video element not found");
         this.throwIfNull(this.ui.canvasElement, "Canvas element not found");
         const result = await this.scannerApi.scanFrame(this.ui.videoElement, this.ui.canvasElement);
-        if (result && result.length > 0) {
+        if (result) {
             console.log("Found something from the frame");
             // Found something from the frame
             this._onScanSuccess(result);
@@ -163,6 +164,13 @@ export class Camera {
     private _onScanSuccess(result: ReadResult[]) {
         this.handlers.onScanSuccess(result);
         console.log(result);
-        this.ui.overlayManager?.onItemFound();
+        result.forEach((item, index) => {
+            this.throwIfNull(this.ui.containerElement, "Container element not found");
+            this.ui.overlayManager?.drawOverlayBox(item.position, this.ui.containerElement, `overlay-box-${index}`);
+            this.ui.overlayManager?.onItemFound();
+        });
+        if (result.length == 0) {
+            this.ui.overlayManager?.removeAllOverlayBoxes();
+        }
     }
 }

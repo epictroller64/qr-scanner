@@ -1,4 +1,6 @@
+import { Position } from "zxing-wasm/reader";
 import { Logger } from "./logger";
+import { CameraError } from "./errors";
 
 
 export class ScanOverlay {
@@ -41,6 +43,45 @@ export class ScanOverlay {
                 }
             }
         }, duration);
+    }
+
+    removeAllOverlayBoxes() {
+        const overlayBoxes = document.querySelectorAll(".overlay-box");
+        overlayBoxes.forEach(box => {
+            box.remove();
+        });
+    }
+
+    drawOverlayBox(position: Position, containerElement: HTMLElement, elementId: string) {
+        this.logger.log(`Drawing overlay box ${elementId}`);
+        console.log(`Drawing overlay box ${elementId}`);
+        // Draw a overlay box over the found barcode
+        const previousBox = document.getElementById(elementId);
+        if (previousBox) {
+            previousBox.remove();
+        }
+        const canvaOverlay = document.createElement("canvas");
+        canvaOverlay.classList.add("overlay-box");
+        canvaOverlay.id = elementId;
+        canvaOverlay.style.position = "absolute";
+        canvaOverlay.width = containerElement.clientWidth;
+        canvaOverlay.height = containerElement.clientHeight;
+        const ctx = canvaOverlay.getContext("2d");
+        if (!ctx) {
+            throw new CameraError("Canvas context not found");
+        }
+        ctx.clearRect(0, 0, canvaOverlay.width, canvaOverlay.height); // clear old drawings
+        ctx.strokeStyle = 'lime';
+        ctx.lineWidth = 2;
+
+        ctx.beginPath();
+        ctx.moveTo(position.topLeft.x, position.topLeft.y);
+        ctx.lineTo(position.topRight.x, position.topRight.y);
+        ctx.lineTo(position.bottomRight.x, position.bottomRight.y);
+        ctx.lineTo(position.bottomLeft.x, position.bottomLeft.y);
+        ctx.lineTo(position.topLeft.x, position.topLeft.y); // close the box
+        ctx.stroke();
+        containerElement.appendChild(canvaOverlay);
     }
 
     toggleScanArea(show: boolean) {
