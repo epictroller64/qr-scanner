@@ -22,6 +22,11 @@ export class ScannerAPI {
         }
     }
 
+    async scanImage(file: File): Promise<ReadResult[] | null> {
+        const result = await readBarcodes(file, this.readerOptions);
+        return result;
+    }
+
     async scanFrame(videoElement: HTMLVideoElement, canvasElement: HTMLCanvasElement): Promise<ReadResult[] | null> {
         if (!videoElement || !canvasElement) {
             throw new ScannerAPIError("Video element or canvas element not found");

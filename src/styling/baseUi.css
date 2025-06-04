@@ -1,24 +1,26 @@
-/* Main container styles */
 #ui-container {
-    max-width: 800px;
+    max-width: 100%;
     margin: 0 auto;
-    padding: 20px;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    min-height: 100vh;
+    background-color: #ffffff;
 }
 
-/* Camera container styles */
 .camera-container {
-    width: 640px;
-    height: 480px;
-    margin: 20px auto;
+    width: 100%;
+    max-width: 640px;
+    aspect-ratio: 4/3;
+    margin: 16px auto;
     position: relative;
     overflow: hidden;
     border-radius: 12px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    background-color: #f5f5f5;
+    background-color: #f8f9fa;
 }
 
-/* Video element styles */
 .camera-video {
     width: 100%;
     height: 100%;
@@ -29,91 +31,161 @@
     transform: scaleX(-1);
 }
 
-/* Button styles */
 button {
     background-color: #007AFF;
     color: white;
     border: none;
-    padding: 12px 24px;
+    padding: 12px 20px;
     border-radius: 8px;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 500;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: all 0.2s ease;
     margin: 8px 0;
+    width: 100%;
+    max-width: 300px;
 }
 
-button:hover {
+.primary-button {
+    background-color: #007AFF;
+    color: white;
+}
+
+.secondary-button {
+    background-color: transparent;
+    color: #007AFF;
+    border: 1px solid #007AFF;
+}
+
+.primary-button:hover {
     background-color: #0056b3;
+}
+
+.secondary-button:hover {
+    background-color: rgba(0, 122, 255, 0.1);
 }
 
 button:active {
     transform: scale(0.98);
 }
 
-/* Camera list styles */
-#camera-list-container {
-    margin: 20px 0;
+.camera-list-container {
+    margin: 16px 0;
+    width: 100%;
+    max-width: 300px;
 }
 
 #camera-list {
     width: 100%;
     padding: 12px;
-    border: 1px solid #ddd;
+    border: 1px solid #e9ecef;
     border-radius: 8px;
-    font-size: 16px;
+    font-size: 15px;
     background-color: white;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 40px;
 }
 
-/* Headings */
 h1 {
-    color: #333;
+    color: #1a1a1a;
     font-size: 24px;
     margin-bottom: 16px;
     font-weight: 600;
+    text-align: center;
 }
 
-/* Paragraphs */
 p {
     color: #666;
-    font-size: 16px;
+    font-size: 15px;
     line-height: 1.5;
     margin-bottom: 16px;
+    text-align: center;
 }
 
-/* Log box styles */
 #log-box-container {
-    margin-top: 20px;
+    margin-top: 16px;
     padding: 16px;
     background-color: #f8f9fa;
     border-radius: 8px;
     border: 1px solid #e9ecef;
+    width: 100%;
+    max-width: 300px;
 }
 
 #log-box-content {
-    max-height: 200px;
+    max-height: 150px;
     overflow-y: auto;
-    font-family: monospace;
-    font-size: 14px;
+    font-family: 'SF Mono', 'Consolas', monospace;
+    font-size: 13px;
     line-height: 1.4;
+    padding: 8px;
+    background-color: #ffffff;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
 }
 
 #log-box-content p {
     margin: 4px 0;
-    color: #495057;
+    color: #2c3e50;
+    text-align: left;
+    font-size: 12px;
 }
-
 
 .loading {
     display: inline-block;
     width: 20px;
     height: 20px;
-    border: 3px solid #f3f3f3;
+    border: 2px solid #f3f3f3;
     border-radius: 50%;
-    border-top: 3px solid #007AFF;
+    border-top: 2px solid #007AFF;
     animation: spin 1s linear infinite;
-    margin-left: 10px;
+    margin-left: 8px;
+}
+
+.scan-options-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin: 16px 0;
+    width: 100%;
+    max-width: 300px;
+}
+
+.scan-options-container p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.state-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+    width: 100%;
+    max-width: 300px;
+}
+
+#image-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#image-container img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 8px;
 }
 
 @keyframes spin {
@@ -123,5 +195,36 @@ p {
 
     100% {
         transform: rotate(360deg);
+    }
+}
+
+/* Mobile optimizations */
+@media (max-width: 480px) {
+    #ui-container {
+        padding: 12px;
+    }
+
+    .camera-container {
+        margin: 12px auto;
+        border-radius: 8px;
+    }
+
+    button {
+        padding: 10px 16px;
+        font-size: 14px;
+    }
+
+    h1 {
+        font-size: 20px;
+        margin-bottom: 12px;
+    }
+
+    p {
+        font-size: 14px;
+        margin-bottom: 12px;
+    }
+
+    .state-container {
+        padding: 12px;
     }
 }

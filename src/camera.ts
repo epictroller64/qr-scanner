@@ -17,7 +17,7 @@ export class Camera {
     private logger: Logger;
     private permissionGranted: boolean = false;
     cameraState: CameraState = CameraState.INITIALIZING;
-    private ui: CameraUI;
+    ui: CameraUI;
     private scannerApi: ScannerAPI;
 
     handlers: CameraHandlers = {
@@ -74,6 +74,11 @@ export class Camera {
             }
             throw new CameraError("Error starting camera");
         }
+    }
+
+    async scanImage(file: File) {
+        const result = await this.scannerApi.scanImage(file);
+        return result;
     }
 
     async stop() {

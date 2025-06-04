@@ -3,6 +3,7 @@ import { Camera } from "./camera";
 import { CameraState } from "./CameraState";
 import { Logger } from "./logger";
 import './styling/baseUi.css';
+
 enum UIState {
     NEED_PERMISSION, // When camera permission is not granted
     CAMERA_RUNNING,
@@ -14,39 +15,56 @@ enum UIState {
 const viewMap = {
     [UIState.NEED_PERMISSION]: async (ui: BaseUI) => {
         const html = `
-        <div>
-            <h1>Need permission</h1>
-            <p>Please grant camera permission to use this app</p>
-            <button id="request-permission-button">Request permission</button>
+        <div class="state-container">
+            <h1>Camera Access Required</h1>
+            <p>Please grant camera permission to use the QR code scanner</p>
+            <button id="request-permission-button" class="primary-button">
+                <span>Grant Permission</span>
+            </button>
         </div>
         `
         return html;
     },
     [UIState.CAMERA_RUNNING]: async (ui: BaseUI) => {
         return `
-        <div>
-            <h1>Camera running</h1>
-            <p>Camera is running</p>
-            <button id="stop-camera-button">Stop camera</button>
-            <div id="log-box-container"></div>
+        <div class="state-container">
+            <h1>Scanning QR Code</h1>
+            <p>Position the QR code within the frame</p>
+            <button id="stop-camera-button" class="secondary-button">
+                <span>Stop Camera</span>
+            </button>
         </div>
         `
     },
     [UIState.READY]: async (ui: BaseUI) => {
+        const cameraList = await ui.camera.getCameras();
         return `
-        <div>
-            <h1>Ready</h1>
-            <div id="camera-list-container"></div>
-            <p>Camera is ready to scan</p>
-            <button id="start-scanning-button">Start scanning</button>
+        <div class="state-container">
+            <h1>QR Code Scanner</h1>
+            <div class="camera-list-container">
+                <label for="camera-list">Select Camera:</label>
+                <select id="camera-list">
+                    ${cameraList.map(camera => `<option value="${camera.deviceId}">${camera.label}</option>`).join('')}
+                </select>
+            </div>
+            <div class="scan-options-container">
+                <button id="start-scanning-button" class="primary-button">
+                    <span>Start Camera</span>
+                </button>
+                <p>or</p>
+                <button id="pick-file-manually-button" class="secondary-button">
+                    <span>Upload Image</span>
+                </button>
+            </div>
         </div>
         `
     },
     [UIState.STARTING]: async (ui: BaseUI) => {
         const html = `
-        <div>
-            <h1>Starting</h1>
-            <p>Starting camera...</p>
+        <div class="state-container">
+            <h1>Initializing</h1>
+            <p>Setting up the scanner...</p>
+            <div class="loading"></div>
         </div>
         `
         return html;
@@ -74,6 +92,50 @@ const uiHandlers = {
         } else {
             ui.setUiState(UIState.NEED_PERMISSION);
         }
+    },
+    pickFileManually: async (ui: BaseUI) => {
+        // Open file picker
+        // When file is picked, scan it automatically and show the loaded image 
+        const fileInput = document.createElement("input");
+        fileInput.type = "file";
+        fileInput.accept = "image/*";
+        fileInput.onchange = async (event) => {
+            const file = (event.target as HTMLInputElement).files?.[0];
+            if (file) {
+                const result = await ui.camera.scanImage(file);
+                if (result) {
+                    if (result.length > 0) {
+                        ui.logboxLogging.log(`Scan result: ${result[0].toString()}`);
+                    } else {
+                        ui.logboxLogging.log(`Scan result: No result`);
+                    }
+                } else {
+                    ui.logboxLogging.log(`Scan result: No result`);
+                }
+                // Show the loaded image
+                const imageContainer = document.createElement("div");
+                const buttonContainer = document.createElement("div");
+                buttonContainer.style.position = "absolute";
+                buttonContainer.style.top = "10px";
+                buttonContainer.style.right = "10px";
+                const closeButton = document.createElement("button");
+                closeButton.textContent = "Close";
+                closeButton.onclick = () => {
+                    imageContainer.remove();
+                }
+                imageContainer.id = "image-container";
+                const image = document.createElement("img");
+                image.src = URL.createObjectURL(file);
+                image.alt = "Loaded image";
+                imageContainer.appendChild(buttonContainer);
+                buttonContainer.appendChild(closeButton);
+                if (ui.camera.ui.containerElement) {
+                    ui.camera.ui.containerElement.appendChild(imageContainer);
+                    imageContainer.appendChild(image);
+                }
+            }
+        }
+        fileInput.click();
     }
 }
 
@@ -101,6 +163,8 @@ export class BaseUI {
             onScanFailure: this.onScanFailure,
         }, readerOptions);
         this.uiContainer = this.createUiContainer();
+        this.logBox = this.createLogBox();
+        this.logboxLogging.log("BaseUI constructor complete");
         this.setUiState(UIState.STARTING, async () => {
             // Check permissions here
             const permission = await this.camera.getCameraPermission();
@@ -116,6 +180,7 @@ export class BaseUI {
     async renderUi() {
         this.uiContainer.innerHTML = await viewMap[this.uiState](this);
         this.attachEventListeners();
+        this.logboxLogging.log("Ui rendered");
     }
 
     private attachEventListeners() {
@@ -134,28 +199,28 @@ export class BaseUI {
             stopCameraButton.addEventListener('click', () => uiHandlers.stopScanning(this));
         }
 
-        // Add camera list if we're in READY state
-        if (this.uiState === UIState.READY) {
-            this.createCameraList().then(cameraList => {
-                const container = document.getElementById('camera-list-container');
-                if (container) {
-                    container.appendChild(cameraList);
-                }
-            });
+        const pickFileManuallyButton = document.getElementById('pick-file-manually-button');
+        if (pickFileManuallyButton) {
+            pickFileManuallyButton.addEventListener('click', () => uiHandlers.pickFileManually(this));
         }
 
+        if (this.uiState === UIState.READY) {
+            // Add change handler to camera list
+            const cameraList = document.getElementById('camera-list');
+            if (cameraList) {
+                cameraList.addEventListener('change', (event) => {
+                    this.selectedCameraId = (event.target as HTMLSelectElement).value;
+                });
+            }
+        }
+
+
         if (this.uiState === UIState.CAMERA_RUNNING) {
-            this.createLogBox().then(logBox => {
-                const container = document.getElementById('log-box-container');
-                if (container) {
-                    this.logBox = logBox;
-                    container.appendChild(logBox);
-                }
-            });
+            this.logboxLogging.log("Camera started")
         }
     }
 
-    logging = {
+    logboxLogging = {
         log: (message: string) => {
             if (this.logBox) {
                 this.logBox.appendChild(document.createElement("p")).textContent = message;
@@ -191,6 +256,9 @@ export class BaseUI {
         this.getParentContainerOrThrow().appendChild(uiContainer);
         this.logger.log("Ui container created");
         this.onCameraStateChange(this.camera.cameraState);
+        const logBoxContainer = document.createElement("div");
+        logBoxContainer.id = "log-box-container";
+        uiContainer.appendChild(logBoxContainer);
         return uiContainer;
     }
 
@@ -219,9 +287,14 @@ export class BaseUI {
         }
     }
 
-    async createLogBox() {
+    createLogBox() {
+        this.logger.log("Creating log box");
+        const logBoxContainer = document.createElement("div");
+        logBoxContainer.id = "log-box-container";
         const logBoxContent = document.createElement("div");
         logBoxContent.id = "log-box-content";
+        logBoxContainer.appendChild(logBoxContent);
+        this.getParentContainerOrThrow().appendChild(logBoxContainer);
         return logBoxContent;
     }
 
@@ -241,33 +314,9 @@ export class BaseUI {
             }
         })
         readyViewContainer.appendChild(startButton);
-        readyViewContainer.appendChild(await this.createCameraList());
         return readyViewContainer;
     }
 
-    async createCameraList() {
-        const cameras = await this.camera.getCameras();
-        const cameraListContainer = document.createElement("div");
-        cameraListContainer.id = "camera-list-container";
-        const cameraList = document.createElement("select");
-        cameraList.id = "camera-list";
-        cameras.forEach((camera) => {
-            const option = document.createElement("option");
-            option.value = camera.deviceId;
-            option.textContent = camera.label;
-            cameraList.appendChild(option);
-        });
-
-        cameraList.addEventListener("change", (event) => {
-            console.log(`Camera list changed: ${event.target}`);
-            if (event.target) {
-                this.selectedCameraId = (event.target as HTMLSelectElement).value;
-            }
-        })
-        cameraListContainer.appendChild(cameraList);
-
-        return cameraListContainer;
-    }
 }
 
 
