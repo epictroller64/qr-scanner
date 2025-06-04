@@ -1,4 +1,4 @@
-import { ReadResult } from "zxing-wasm/reader";
+import { ReaderOptions, ReadResult } from "zxing-wasm/reader";
 import { CameraState } from "./CameraState";
 import { CameraError } from "./errors";
 import { Logger } from "./logger";
@@ -26,12 +26,12 @@ export class Camera {
         onStateChange: () => { }
     }
 
-    constructor(parentElementId: string, handlers: CameraHandlers) {
+    constructor(parentElementId: string, handlers: CameraHandlers, readerOptions?: ReaderOptions) {
         this.logger = new Logger("Camera", true);
         this.handlers = handlers;
         // Build the camera interface and attach it to the DOM
         this.ui = new CameraUI(parentElementId);
-        this.scannerApi = new ScannerAPI();
+        this.scannerApi = new ScannerAPI(readerOptions);
         this.logger.log("Camera constructor complete");
         this.handlers.onStateChange(CameraState.READY);
     }
@@ -49,11 +49,14 @@ export class Camera {
             this.throwIfNull(this.ui.videoElement, "Video element not found");
             this.ui.videoElement.onloadedmetadata = () => {
                 this.throwIfNull(this.ui.videoElement, "Video element not found");
-                this.ui.setCanvasDimensions(this.ui.videoElement.videoWidth, this.ui.videoElement.videoHeight);
+                /// Test setting fixed dimensions for video
+                //this.ui.setCanvasDimensions(this.ui.videoElement.videoWidth, this.ui.videoElement.videoHeight);
+                this.ui.setCanvasDimensions(640, 480);
                 this.throwIfNull(this.ui.canvasElement, "Canvas element not found");
                 this.throwIfNull(this.ui.containerElement, "Container element not found");
                 this.throwIfNull(this.ui.overlayManager, "Overlay manager not found");
-                this.ui.setContainerDimensions(this.ui.videoElement.videoWidth, this.ui.videoElement.videoHeight);
+                //this.ui.setContainerDimensions(this.ui.videoElement.videoWidth, this.ui.videoElement.videoHeight);
+                this.ui.setContainerDimensions(640, 480);
                 this.ui.overlayManager.createScanAreaElement();
                 this.ui.overlayManager.toggleScanArea(true);
             }

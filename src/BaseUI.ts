@@ -1,8 +1,8 @@
-import { ReadResult } from "zxing-wasm/reader";
+import { ReaderOptions, ReadResult } from "zxing-wasm/reader";
 import { Camera } from "./camera";
 import { CameraState } from "./CameraState";
 import { Logger } from "./logger";
-
+import './styling/baseUi.css';
 enum UIState {
     NEED_PERMISSION, // When camera permission is not granted
     CAMERA_RUNNING,
@@ -28,6 +28,7 @@ const viewMap = {
             <h1>Camera running</h1>
             <p>Camera is running</p>
             <button id="stop-camera-button">Stop camera</button>
+            <div id="log-box-container"></div>
         </div>
         `
     },
@@ -54,19 +55,18 @@ const viewMap = {
 
 const uiHandlers = {
     startScanning: async (ui: BaseUI) => {
-        if (ui.selectedCameraId) {
-            ui.camera.start(ui.selectedCameraId);
-            ui.setUiState(UIState.CAMERA_RUNNING);
-        } else {
-            console.log(`No camera selected`);
+        if (!ui.selectedCameraId) {
+            ui.selectedCameraId = (await ui.camera.getCameras())[0].deviceId;
         }
+        ui.camera.start(ui.selectedCameraId);
+        ui.setUiState(UIState.CAMERA_RUNNING);
     },
     stopScanning: async (ui: BaseUI) => {
         ui.camera.stop();
         ui.setUiState(UIState.READY);
     },
     requestPermission: async (ui: BaseUI) => {
-        const permission = await ui.camera.requestCameraPermission();
+        await ui.camera.requestCameraPermission();
         //Veriffy permission
         const permissionGranted = await ui.camera.getCameraPermission();
         if (permissionGranted) {
@@ -85,8 +85,9 @@ export class BaseUI {
     selectedCameraId: string | null = null;
     private logger: Logger;
     private uiState: UIState = UIState.STARTING;
+    private logBox: HTMLDivElement | null = null;
 
-    constructor(parentElementId: string) {
+    constructor(parentElementId: string, readerOptions?: ReaderOptions) {
         this.logger = new Logger("BaseUI", true);
         this.parentElementId = parentElementId;
         // Bind the methods to preserve this context
@@ -98,7 +99,7 @@ export class BaseUI {
             onStateChange: this.onCameraStateChange,
             onScanSuccess: this.onScanSuccess,
             onScanFailure: this.onScanFailure,
-        });
+        }, readerOptions);
         this.uiContainer = this.createUiContainer();
         this.setUiState(UIState.STARTING, async () => {
             // Check permissions here
@@ -141,6 +142,29 @@ export class BaseUI {
                     container.appendChild(cameraList);
                 }
             });
+        }
+
+        if (this.uiState === UIState.CAMERA_RUNNING) {
+            this.createLogBox().then(logBox => {
+                const container = document.getElementById('log-box-container');
+                if (container) {
+                    this.logBox = logBox;
+                    container.appendChild(logBox);
+                }
+            });
+        }
+    }
+
+    logging = {
+        log: (message: string) => {
+            if (this.logBox) {
+                this.logBox.appendChild(document.createElement("p")).textContent = message;
+            }
+        },
+        clear: () => {
+            if (this.logBox) {
+                this.logBox.innerHTML = "";
+            }
         }
     }
 
@@ -195,16 +219,24 @@ export class BaseUI {
         }
     }
 
+    async createLogBox() {
+        const logBoxContent = document.createElement("div");
+        logBoxContent.id = "log-box-content";
+        return logBoxContent;
+    }
+
     async createReadyView() {
         const readyViewContainer = document.createElement("div");
         readyViewContainer.id = "ready-view-container";
         const startButton = document.createElement("button");
         startButton.id = "start-button";
         startButton.textContent = "Start";
-        startButton.addEventListener("click", () => {
+        startButton.addEventListener("click", async () => {
             if (this.selectedCameraId) {
                 this.camera.start(this.selectedCameraId);
             } else {
+                // start default camera
+                this.camera.start((await this.camera.getCameras())[0].deviceId);
 
             }
         })

@@ -1,13 +1,25 @@
-import { readBarcodes, ReadResult } from "zxing-wasm/reader";
+import { readBarcodes, ReadResult, type ReaderOptions } from "zxing-wasm/reader";
 import { ScannerAPIError } from "./errors";
 import { Logger } from "./logger";
 
 export class ScannerAPI {
 
     private logger: Logger;
+    private readerOptions: ReaderOptions | undefined;
 
-    constructor() {
+    constructor(readerOptions?: ReaderOptions) {
         this.logger = new Logger("ScannerAPI", true);
+        this.readerOptions = readerOptions || this.createDefaultReaderOptions();
+    }
+
+    createDefaultReaderOptions(): ReaderOptions {
+        return {
+            formats: [
+                "QRCode",
+                "MicroQRCode",
+            ],
+
+        }
     }
 
     async scanFrame(videoElement: HTMLVideoElement, canvasElement: HTMLCanvasElement): Promise<ReadResult[] | null> {
