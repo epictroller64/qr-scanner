@@ -10,19 +10,11 @@
 <body>
     <h1>Testing Browser Package</h1>
     <div id="camera-mount"></div>
-    <button id="start-scanning">Start camera</button>
-    <button id="clear-camera">Clear camera</button>
     <script type="module">
-        import { QrScanner } from './dist/main.js';
-        window.addEventListener('DOMContentLoaded', () => {
-            const qrScanner = new QrScanner();
-
-            document.getElementById("start-scanning").addEventListener("click", () => {
-                qrScanner.start();
-            });
-            document.getElementById("clear-camera").addEventListener("click", async () => {
-                await qrScanner.clear();
-            });
+        import { BaseUI } from './dist/main.js';
+        window.addEventListener('DOMContentLoaded', async () => {
+            console.log("DOMContentLoaded");
+            const ui = new BaseUI("camera-mount");
         });
     </script>
 </body>

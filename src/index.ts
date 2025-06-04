@@ -1,4 +1,2 @@
-
-
-export { QrScanner } from "./QrScanner";
-
+export { Camera } from "./camera";
+export { BaseUI } from "./BaseUI";

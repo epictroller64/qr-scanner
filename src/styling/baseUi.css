@@ -1,1 +1,10 @@
 .camera-list {}
+
+.camera-select {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border-radius: 10px;
+    border: none;
+    background: oklch(50% 0.134 242.749);
+    color: white;
+}

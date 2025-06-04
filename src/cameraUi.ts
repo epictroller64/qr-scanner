@@ -1,120 +1,92 @@
-import { Camera } from "./camera";
-import { CameraUIError } from "./errors";
-import { Logger } from "./logger";
-import "./styling/baseUi.css"
+import { CameraError } from "./errors";
+import { ScanOverlay } from "./ScannerOverlay";
 
-const handlers = {
-    onCameraStart: () => {
-        console.log("Camera started");
-    },
-    onCameraStop: () => {
-        console.log("Camera stopped");
-    },
-    onCameraError: (error: CameraUIError) => {
-        console.error(error);
-    }
-}
-
-// Built in Camera UI
+// Build all the elements necessary for basic camera operation
 export class CameraUI {
 
-    private camera: Camera | null = null;
-    private selectedCameraId: string | null = null;
-    private elementId: string;
-    private videoElement: HTMLVideoElement | null = null;
-    private cameraListElement: HTMLElement | null = null;
-    private controlsElement: HTMLElement | null = null;
-    private logging: boolean = false;
-    private logger: Logger;
-
-    constructor(elementId: string, logging: boolean = false) {
-        this.elementId = elementId;
-        this.logging = logging;
-        this.logger = new Logger("CameraUI", this.logging);
+    public parentElement: HTMLElement | null = null;
+    public containerElement: HTMLElement | null = null;
+    public videoElement: HTMLVideoElement | null = null;
+    public canvasElement: HTMLCanvasElement | null = null;
+    public overlayManager: ScanOverlay | null = null;
+    // Handles the creation of:
+    // - Video element, Canvas element, Overlay element
+    // 
+    constructor(parentElementId: string) {
+        this.parentElement = document.getElementById(parentElementId);
+        this.throwIfNull(this.parentElement, "Parent element not found");
+        this.createContainerElement();
+        this.createVideoElement();
+        this.createCanvasElement();
+        this.createOverlayElement();
+    }
+    setContainerDimensions(width: number, height: number) {
+        this.throwIfNull(this.containerElement, "Container element not found");
+        this.containerElement.style.width = `${width}px`;
+        this.containerElement.style.height = `${height}px`;
     }
 
-    async buildUi() {
-        this.camera = new Camera(this.elementId);
-        await this.createCameraListElement();
-        await this.createControlsElement();
+    setVideoStream(stream: MediaStream) {
+        this.throwIfNull(this.videoElement, "Video element not found");
+        this.videoElement.srcObject = stream;
+    }
+    setCanvasDimensions(width: number, height: number) {
+        this.throwIfNull(this.canvasElement, "Canvas element not found");
+        this.canvasElement.width = width;
+        this.canvasElement.height = height;
     }
 
-    async clear() {
-        if (this.camera) {
-            await this.camera.stopCamera();
-            this.camera.clearCamera();
-        }
+    // Create the overlay elemento
+    private createOverlayElement() {
+        this.throwIfNull(this.videoElement, "Video element not found");
+        this.throwIfNull(this.containerElement, "Container element not found");
+        this.overlayManager = new ScanOverlay(this.videoElement, this.containerElement);
     }
 
-    async createControlsElement() {
-        const controls = document.createElement("div");
-        const startScanningButton = document.createElement("button");
-        startScanningButton.textContent = "Start Scanning";
-        startScanningButton.addEventListener("click", async () => {
-            if (!this.camera) {
-                throw new CameraUIError("Camera not found");
-            }
-            if (!this.selectedCameraId) {
-                throw new CameraUIError("Selected camera id not found");
-            }
-            await this.camera.startCamera(this.selectedCameraId);
-            // Custom handlers for later
-            handlers.onCameraStart();
-        });
-        const stopScanningButton = document.createElement("button");
-        stopScanningButton.textContent = "Stop Scanning";
-        stopScanningButton.addEventListener("click", async () => {
-            if (!this.camera) {
-                throw new CameraUIError("Camera not found");
-            }
-            await this.camera.stopCamera();
-            // Custom handlers for later
-            handlers.onCameraStop();
-        });
-        controls.appendChild(startScanningButton);
-        controls.appendChild(stopScanningButton);
-        controls.classList.add("camera-controls");
-        if (!this.camera || !this.camera.parentElement) {
-            throw new CameraUIError("Container element not found");
-        }
-        this.camera.parentElement.appendChild(controls);
-        this.controlsElement = controls;
+    // This container will hold camera feed: video, canva, overlay elements
+    private createContainerElement() {
+        this.throwIfNull(this.parentElement, "Parent element not found");
+        const container = document.createElement("div");
+        container.classList.add("camera-container");
+        this.parentElement.appendChild(container);
+        this.containerElement = container;
+        container.style.position = "relative";
+        return container;
+    }
+
+    // This element is used to send frames to the scanner
+    private createCanvasElement() {
+        const canvas = document.createElement("canvas");
+        canvas.style.display = "none"
+        canvas.classList.add("camera-canvas");
+        this.throwIfNull(this.containerElement, "Container element not found");
+        this.containerElement.appendChild(canvas);
+        this.canvasElement = canvas;
+        return canvas;
     }
 
 
-    async createCameraListElement() {
-        if (!this.camera) {
-            throw new CameraUIError("Camera not found");
+
+    // Video element to show the camera feed
+    private createVideoElement() {
+        if (!this.containerElement) {
+            throw new CameraError("Container element not found");
         }
-        const cameraList = await this.camera.getCameras();
-        const cameraListContainer = document.createElement("div");
-        const cameraListSelect = document.createElement("select");
-        cameraListContainer.classList.add("camera-list");
-        cameraListSelect.classList.add("camera-select");
-        cameraList.forEach(camera => {
-            const cameraItem = document.createElement("option");
-            cameraItem.classList.add("camera-item");
-            cameraItem.textContent = camera.label;
-            cameraListSelect.appendChild(cameraItem);
-        });
-        if (!this.camera || !this.camera.parentElement) {
-            throw new CameraUIError("Container element not found");
-        }
-        this.camera.parentElement.appendChild(cameraListContainer);
-        cameraListContainer.appendChild(cameraListSelect);
-        this.selectedCameraId = cameraList[0].deviceId; // For testing only
-        return cameraListContainer;
+        const video = document.createElement("video");
+        video.classList.add("camera-video");
+        video.autoplay = true;
+        video.playsInline = true;
+        video.style.position = "absolute";
+        video.style.pointerEvents = "none";
+
+        this.containerElement.appendChild(video);
+        this.videoElement = video;
+        return video;
     }
 
-    async startCamera() {
-        if (!this.camera) {
-            throw new CameraUIError("Camera not found");
+    private throwIfNull<T>(value: T | null, message: string): asserts value is T {
+        if (!value) {
+            throw new CameraError(message);
         }
-        if (!this.selectedCameraId) {
-            throw new CameraUIError("Selected camera id not found");
-        }
-        this.logger.log("Starting camera");
-        await this.camera.startCamera(this.selectedCameraId);
     }
-
 }
