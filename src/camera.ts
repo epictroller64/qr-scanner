@@ -5,6 +5,7 @@ import { Logger } from "./logger";
 import { CameraItem } from "./types";
 import { CameraUI } from "./CameraUI";
 import { ScannerAPI } from "./ScannerAPI";
+import { ConstraintManager } from "./ConstraintManager";
 
 export type CameraHandlers = {
     onScanSuccess: (result: ReadResult[]) => void;
@@ -15,10 +16,10 @@ export type CameraHandlers = {
 export class Camera {
 
     private logger: Logger;
-    private permissionGranted: boolean = false;
     cameraState: CameraState = CameraState.INITIALIZING;
     ui: CameraUI;
     private scannerApi: ScannerAPI;
+    constraintManager: ConstraintManager;
 
     handlers: CameraHandlers = {
         onScanSuccess: () => { },
@@ -34,11 +35,22 @@ export class Camera {
         this.scannerApi = new ScannerAPI(readerOptions, frameRate);
         this.logger.log("Camera constructor complete");
         this.setCameraState(CameraState.READY);
+        this.constraintManager = new ConstraintManager();
+    }
+
+    applyConstraints(constraints: MediaTrackConstraints) {
+        this.throwIfNull(this.ui.videoElement, "Video element not found");
+        this.constraintManager.setConstraints(constraints);
     }
 
     setCameraState(state: CameraState) {
         this.cameraState = state;
         this.handlers.onStateChange(state);
+    }
+
+    toggleTorch() {
+        this.throwIfNull(this.ui.videoElement, "Video element not found");
+        this.constraintManager.toggleTorch();
     }
 
     async start(cameraId: string) {
@@ -74,7 +86,7 @@ export class Camera {
             }
             this.ui.setVideoStream(stream);
             this.setCameraState(CameraState.READY);
-
+            this.constraintManager.setMediaStream(stream);
             return stream;
         } catch (error) {
             if (error instanceof CameraError) {

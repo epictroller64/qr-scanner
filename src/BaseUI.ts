@@ -31,6 +31,9 @@ const viewMap = {
             <button id="stop-camera-button" class="secondary-button">
                 <span>Stop Camera</span>
             </button>
+            <button id="enable-torch-button" class="secondary-button">
+                <span>Enable Torch</span>
+            </button>
         </div>
         `
     },
@@ -79,6 +82,14 @@ const uiHandlers = {
     stopScanning: async (ui: BaseUI) => {
         ui.camera.stop();
         ui.setUiState(UIState.READY);
+    },
+    toggleTorch: async (ui: BaseUI) => {
+        ui.camera.toggleTorch();
+        // Update the button text
+        const enableTorchButton = document.getElementById('enable-torch-button');
+        if (enableTorchButton) {
+            enableTorchButton.textContent = ui.camera.constraintManager.torchEnabled ? "Disable Torch" : "Enable Torch";
+        }
     },
     requestPermission: async (ui: BaseUI) => {
         await ui.camera.requestCameraPermission();
@@ -199,6 +210,11 @@ export class BaseUI {
         const pickFileManuallyButton = document.getElementById('pick-file-manually-button');
         if (pickFileManuallyButton) {
             pickFileManuallyButton.addEventListener('click', () => uiHandlers.pickFileManually(this));
+        }
+
+        const enableTorchButton = document.getElementById('enable-torch-button');
+        if (enableTorchButton) {
+            enableTorchButton.addEventListener('click', () => uiHandlers.toggleTorch(this));
         }
 
         if (this.uiState === UIState.READY) {
