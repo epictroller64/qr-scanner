@@ -33,11 +33,16 @@ export class Camera {
         this.ui = new CameraUI(parentElementId);
         this.scannerApi = new ScannerAPI(readerOptions);
         this.logger.log("Camera constructor complete");
-        this.handlers.onStateChange(CameraState.READY);
+        this.setCameraState(CameraState.READY);
+    }
+
+    setCameraState(state: CameraState) {
+        this.cameraState = state;
+        this.handlers.onStateChange(state);
     }
 
     async start(cameraId: string) {
-        this.cameraState = CameraState.STARTING;
+        this.setCameraState(CameraState.STARTING);
         // Verify camera permissions
         if (!(await this.getCameraPermission())) {
             this.logger.error("Camera permission not granted");
@@ -49,22 +54,26 @@ export class Camera {
             this.throwIfNull(this.ui.videoElement, "Video element not found");
             this.ui.videoElement.onloadedmetadata = () => {
                 this.throwIfNull(this.ui.videoElement, "Video element not found");
-                /// Test setting fixed dimensions for video
-                //this.ui.setCanvasDimensions(this.ui.videoElement.videoWidth, this.ui.videoElement.videoHeight);
-                this.ui.setCanvasDimensions(640, 480);
+                const container = document.getElementById("camera-container");
+                if (!container) {
+                    throw new CameraError("Camera container not found");
+                }
+                const rect = container.getBoundingClientRect();
+                const w = Math.round(rect.width);
+                const h = Math.round(rect.height);
+                console.log(`Screen dimensions: ${w} ${h}`);
+                this.ui.setCanvasDimensions(w, h);
                 this.throwIfNull(this.ui.canvasElement, "Canvas element not found");
                 this.throwIfNull(this.ui.containerElement, "Container element not found");
                 this.throwIfNull(this.ui.overlayManager, "Overlay manager not found");
-                //this.ui.setContainerDimensions(this.ui.videoElement.videoWidth, this.ui.videoElement.videoHeight);
-                this.ui.setContainerDimensions(640, 480);
-                this.ui.overlayManager.createScanAreaElement();
+                this.ui.setContainerDimensions(w, h);
+                this.ui.overlayManager.createScanAreaElement(w, h);
                 this.ui.overlayManager.toggleScanArea(true);
+                this.setCameraState(CameraState.SCANNING);
+                requestAnimationFrame(() => this.scanLoop());
             }
             this.ui.setVideoStream(stream);
-            this.cameraState = CameraState.READY;
-
-            // Run the scanner API loop
-            requestAnimationFrame(() => this.scanLoop());
+            this.setCameraState(CameraState.READY);
 
             return stream;
         } catch (error) {
@@ -89,13 +98,16 @@ export class Camera {
             tracks.forEach(track => track.stop());
             this.ui.videoElement.srcObject = null;
             stream = null;
-            this.cameraState = CameraState.READY;
+            this.setCameraState(CameraState.READY);
+            this.ui.overlayManager?.toggleScanArea(false);
+            this.ui.overlayManager = null
         }
         this.throwIfNull(this.ui.parentElement, "Parent element not found");
     }
 
     private async scanLoop() {
         if (this.cameraState !== CameraState.SCANNING) {
+            this.logger.log("Scan loop stopped, state is not SCANNING");
             return
         }
         this.throwIfNull(this.ui.videoElement, "Video element not found");
@@ -151,5 +163,6 @@ export class Camera {
 
     private _onScanSuccess(result: ReadResult[]) {
         this.handlers.onScanSuccess(result);
+        this.ui.overlayManager?.onItemFound();
     }
 }

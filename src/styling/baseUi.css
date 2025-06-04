@@ -10,7 +10,7 @@
     background-color: #ffffff;
 }
 
-.camera-container {
+#camera-container {
     width: 100%;
     max-width: 640px;
     aspect-ratio: 4/3;
@@ -28,7 +28,6 @@
     position: absolute;
     top: 0;
     left: 0;
-    transform: scaleX(-1);
 }
 
 button {
@@ -198,15 +197,24 @@ p {
     }
 }
 
+@media (max-width: 640px) {
+    #camera-container {
+        max-width: 480px;
+        aspect-ratio: 1/1;
+    }
+}
+
 /* Mobile optimizations */
 @media (max-width: 480px) {
     #ui-container {
         padding: 12px;
     }
 
-    .camera-container {
+    #camera-container {
         margin: 12px auto;
         border-radius: 8px;
+        max-width: 480px;
+        aspect-ratio: 1/1;
     }
 
     button {

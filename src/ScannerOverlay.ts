@@ -48,7 +48,7 @@ export class ScanOverlay {
         this.scanAreaElement.style.display = show ? "flex" : "none";
     }
 
-    createScanAreaElement() {
+    createScanAreaElement(w: number, h: number) {
         this.throwIfNull(this.videoElement, "Video element not found");
         const scanOverlay = document.createElement("div");
         // Make the overlay cover the entire video element
@@ -56,8 +56,8 @@ export class ScanOverlay {
         scanOverlay.style.position = "absolute";
         scanOverlay.style.top = "0";
         scanOverlay.style.left = "0";
-        scanOverlay.style.width = `${this.videoElement.videoWidth}px`;
-        scanOverlay.style.height = `${this.videoElement.videoHeight}px`;
+        scanOverlay.style.width = `${w}px`;
+        scanOverlay.style.height = `${h}px`;
         scanOverlay.style.background = "transparent";
         scanOverlay.style.pointerEvents = "none";
         scanOverlay.style.display = "flex"

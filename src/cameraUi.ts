@@ -47,7 +47,7 @@ export class CameraUI {
     private createContainerElement() {
         this.throwIfNull(this.parentElement, "Parent element not found");
         const container = document.createElement("div");
-        container.classList.add("camera-container");
+        container.id = "camera-container";
         this.parentElement.appendChild(container);
         this.containerElement = container;
         container.style.position = "relative";
@@ -82,6 +82,33 @@ export class CameraUI {
         this.containerElement.appendChild(video);
         this.videoElement = video;
         return video;
+    }
+
+    // Calculate the camera container dimensions based on the screen dimensions
+    calculateCameraContainerDimensions() {
+        const screenDimensions = this.getScreenDimensions();
+        if (screenDimensions.width < 640) {
+            // Mobile screen
+            return {
+                width: screenDimensions.width,
+                height: screenDimensions.width * 3 / 4
+            }
+        } else {
+            // Desktop screen
+            return {
+                width: screenDimensions.width * 0.7,
+                height: screenDimensions.width * 0.7 * 3 / 4
+            }
+        }
+    }
+    // Get screen dimensions to calculate the camera container dimensions
+    private getScreenDimensions() {
+        const screenWidth = window.innerWidth;
+        const screenHeight = window.innerHeight;
+        return {
+            width: screenWidth,
+            height: screenHeight
+        }
     }
 
     private throwIfNull<T>(value: T | null, message: string): asserts value is T {

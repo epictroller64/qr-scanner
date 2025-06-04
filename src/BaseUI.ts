@@ -16,7 +16,6 @@ const viewMap = {
     [UIState.NEED_PERMISSION]: async (ui: BaseUI) => {
         const html = `
         <div class="state-container">
-            <h1>Camera Access Required</h1>
             <p>Please grant camera permission to use the QR code scanner</p>
             <button id="request-permission-button" class="primary-button">
                 <span>Grant Permission</span>
@@ -28,7 +27,6 @@ const viewMap = {
     [UIState.CAMERA_RUNNING]: async (ui: BaseUI) => {
         return `
         <div class="state-container">
-            <h1>Scanning QR Code</h1>
             <p>Position the QR code within the frame</p>
             <button id="stop-camera-button" class="secondary-button">
                 <span>Stop Camera</span>
@@ -40,7 +38,6 @@ const viewMap = {
         const cameraList = await ui.camera.getCameras();
         return `
         <div class="state-container">
-            <h1>QR Code Scanner</h1>
             <div class="camera-list-container">
                 <label for="camera-list">Select Camera:</label>
                 <select id="camera-list">
@@ -62,7 +59,6 @@ const viewMap = {
     [UIState.STARTING]: async (ui: BaseUI) => {
         const html = `
         <div class="state-container">
-            <h1>Initializing</h1>
             <p>Setting up the scanner...</p>
             <div class="loading"></div>
         </div>
@@ -71,6 +67,7 @@ const viewMap = {
     }
 }
 
+// Handlers for the UI elements
 const uiHandlers = {
     startScanning: async (ui: BaseUI) => {
         if (!ui.selectedCameraId) {
@@ -263,11 +260,13 @@ export class BaseUI {
     }
 
     onScanSuccess(result: ReadResult[]) {
-        this.logger.log(`Scan success: ${result}`);
+        this.logger.log(`Scan success: ${result.map(r => r.text).join(", ")}`);
+        this.logboxLogging.log(`Scan success: ${result.map(r => r.text).join(", ")}`);
     }
 
     onScanFailure() {
         this.logger.log(`Scan failure`);
+        this.logboxLogging.log(`Scan failure`);
     }
 
     async onCameraStateChange(state: CameraState) {

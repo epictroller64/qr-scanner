@@ -14,10 +14,6 @@ export class ScannerAPI {
 
     createDefaultReaderOptions(): ReaderOptions {
         return {
-            formats: [
-                "QRCode",
-                "MicroQRCode",
-            ],
 
         }
     }
