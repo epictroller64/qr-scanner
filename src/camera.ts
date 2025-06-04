@@ -6,6 +6,7 @@ import { CameraItem } from "./types";
 import { CameraUI } from "./CameraUI";
 import { ScannerAPI } from "./ScannerAPI";
 import { ConstraintManager } from "./ConstraintManager";
+import { CapabilitiesManager } from "./CapabilitiesManager";
 
 export type CameraHandlers = {
     onScanSuccess: (result: ReadResult[]) => void;
@@ -20,6 +21,7 @@ export class Camera {
     ui: CameraUI;
     private scannerApi: ScannerAPI;
     constraintManager: ConstraintManager;
+    capabilitiesManager: CapabilitiesManager;
 
     handlers: CameraHandlers = {
         onScanSuccess: () => { },
@@ -36,6 +38,7 @@ export class Camera {
         this.logger.log("Camera constructor complete");
         this.setCameraState(CameraState.READY);
         this.constraintManager = new ConstraintManager();
+        this.capabilitiesManager = new CapabilitiesManager();
     }
 
     applyConstraints(constraints: MediaTrackConstraints) {
@@ -48,10 +51,6 @@ export class Camera {
         this.handlers.onStateChange(state);
     }
 
-    toggleTorch() {
-        this.throwIfNull(this.ui.videoElement, "Video element not found");
-        this.constraintManager.toggleTorch();
-    }
 
     async start(cameraId: string) {
         this.setCameraState(CameraState.STARTING);
@@ -63,6 +62,9 @@ export class Camera {
         // Get the camera
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: cameraId } } });
+            this.constraintManager.setMediaStream(stream);
+            this.capabilitiesManager.setMediaStream(stream);
+            console.log(`stream set`)
             this.throwIfNull(this.ui.videoElement, "Video element not found");
             this.ui.videoElement.onloadedmetadata = () => {
                 this.throwIfNull(this.ui.videoElement, "Video element not found");
@@ -81,12 +83,11 @@ export class Camera {
                 this.ui.setContainerDimensions(w, h);
                 this.ui.overlayManager.createScanAreaElement(w, h);
                 this.ui.overlayManager.toggleScanArea(true);
-                this.setCameraState(CameraState.SCANNING);
                 requestAnimationFrame(() => this.scanLoop());
+                this.setCameraState(CameraState.SCANNING);
             }
             this.ui.setVideoStream(stream);
             this.setCameraState(CameraState.READY);
-            this.constraintManager.setMediaStream(stream);
             return stream;
         } catch (error) {
             if (error instanceof CameraError) {

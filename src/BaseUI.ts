@@ -25,15 +25,19 @@ const viewMap = {
         return html;
     },
     [UIState.CAMERA_RUNNING]: async (ui: BaseUI) => {
+        // Check if torch is allowed for the selected camera
+        const torchAllowed = ui.camera.capabilitiesManager.checkTorchCapability();
+        const torchButtonHtml = torchAllowed ? `
+            <button id="enable-torch-button" class="secondary-button">
+                <span>Enable Torch</span>
+            </button>` : "";
         return `
         <div class="state-container">
             <p>Position the QR code within the frame</p>
             <button id="stop-camera-button" class="secondary-button">
                 <span>Stop Camera</span>
             </button>
-            <button id="enable-torch-button" class="secondary-button">
-                <span>Enable Torch</span>
-            </button>
+            ${torchButtonHtml}
         </div>
         `
     },
@@ -76,7 +80,7 @@ const uiHandlers = {
         if (!ui.selectedCameraId) {
             ui.selectedCameraId = (await ui.camera.getCameras())[0].deviceId;
         }
-        ui.camera.start(ui.selectedCameraId);
+        await ui.camera.start(ui.selectedCameraId);
         ui.setUiState(UIState.CAMERA_RUNNING);
     },
     stopScanning: async (ui: BaseUI) => {
@@ -84,7 +88,7 @@ const uiHandlers = {
         ui.setUiState(UIState.READY);
     },
     toggleTorch: async (ui: BaseUI) => {
-        ui.camera.toggleTorch();
+        ui.camera.constraintManager.toggleTorch();
         // Update the button text
         const enableTorchButton = document.getElementById('enable-torch-button');
         if (enableTorchButton) {
