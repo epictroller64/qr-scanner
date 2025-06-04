@@ -100,7 +100,6 @@ export class Camera {
             stream = null;
             this.setCameraState(CameraState.READY);
             this.ui.overlayManager?.toggleScanArea(false);
-            this.ui.overlayManager = null
         }
         this.throwIfNull(this.ui.parentElement, "Parent element not found");
     }
@@ -163,6 +162,7 @@ export class Camera {
 
     private _onScanSuccess(result: ReadResult[]) {
         this.handlers.onScanSuccess(result);
+        console.log(result);
         this.ui.overlayManager?.onItemFound();
     }
 }
