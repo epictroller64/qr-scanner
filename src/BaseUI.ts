@@ -158,7 +158,7 @@ export class BaseUI {
             onStateChange: this.onCameraStateChange,
             onScanSuccess: this.onScanSuccess,
             onScanFailure: this.onScanFailure,
-        }, readerOptions);
+        }, readerOptions, 14);
         this.uiContainer = this.createUiContainer();
         this.logBox = this.createLogBox();
         this.logboxLogging.log("BaseUI constructor complete");

@@ -5,7 +5,6 @@ import { Logger } from "./logger";
 import { CameraItem } from "./types";
 import { CameraUI } from "./CameraUI";
 import { ScannerAPI } from "./ScannerAPI";
-import { posix } from "path";
 
 export type CameraHandlers = {
     onScanSuccess: (result: ReadResult[]) => void;
@@ -27,12 +26,12 @@ export class Camera {
         onStateChange: () => { }
     }
 
-    constructor(parentElementId: string, handlers: CameraHandlers, readerOptions?: ReaderOptions) {
+    constructor(parentElementId: string, handlers: CameraHandlers, readerOptions?: ReaderOptions, frameRate?: number) {
         this.logger = new Logger("Camera", true);
         this.handlers = handlers;
         // Build the camera interface and attach it to the DOM
         this.ui = new CameraUI(parentElementId);
-        this.scannerApi = new ScannerAPI(readerOptions);
+        this.scannerApi = new ScannerAPI(readerOptions, frameRate);
         this.logger.log("Camera constructor complete");
         this.setCameraState(CameraState.READY);
     }
@@ -113,8 +112,8 @@ export class Camera {
         this.throwIfNull(this.ui.videoElement, "Video element not found");
         this.throwIfNull(this.ui.canvasElement, "Canvas element not found");
         const result = await this.scannerApi.scanFrame(this.ui.videoElement, this.ui.canvasElement);
+        // Dont do anything if null is returned
         if (result) {
-            console.log("Found something from the frame");
             // Found something from the frame
             this._onScanSuccess(result);
         }

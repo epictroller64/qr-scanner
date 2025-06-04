@@ -6,16 +6,24 @@ export class ScannerAPI {
 
     private logger: Logger;
     private readerOptions: ReaderOptions | undefined;
+    private lastScanTime: number = 0;
+    private frameRate: number = 10;
+    private minInterval: number;
 
-    constructor(readerOptions?: ReaderOptions) {
+    constructor(readerOptions?: ReaderOptions, frameRate?: number) {
         this.logger = new Logger("ScannerAPI", true);
         this.readerOptions = readerOptions || this.createDefaultReaderOptions();
+        this.frameRate = frameRate || 10;
+        this.minInterval = 1000 / this.frameRate;
     }
 
     createDefaultReaderOptions(): ReaderOptions {
-        return {
+        return {}
+    }
 
-        }
+    private isScanAllowed(): boolean {
+        const now = Date.now();
+        return now - this.lastScanTime >= this.minInterval;
     }
 
     async scanImage(file: File): Promise<ReadResult[] | null> {
@@ -27,19 +35,25 @@ export class ScannerAPI {
         if (!videoElement || !canvasElement) {
             throw new ScannerAPIError("Video element or canvas element not found");
         }
+
+        if (!this.isScanAllowed()) {
+            return null;
+        }
+
         if (videoElement.readyState === videoElement.HAVE_ENOUGH_DATA) {
             const ctx = canvasElement.getContext("2d", {
                 willReadFrequently: true
             });
             if (!ctx) {
-                throw new ScannerAPIError("Canvas context not found");
+                throw new ScannerAPIError("Could not get canvas context");
             }
+
             ctx.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+
+            this.lastScanTime = Date.now();
+
             const imageData = ctx.getImageData(0, 0, canvasElement.width, canvasElement.height);
-            const result = await readBarcodes(imageData)
-            if (result.length > 0) {
-                this.logger.log(`Found ${result.length} barcodes`);
-            }
+            const result = await readBarcodes(imageData, this.readerOptions);
             return result;
         }
         return null;
