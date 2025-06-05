@@ -2,7 +2,7 @@ import { ReaderOptions, ReadResult } from "zxing-wasm/reader";
 import { CameraState } from "./CameraState";
 import { CameraError } from "./errors";
 import { Logger } from "./logger";
-import { CameraItem } from "./types";
+import { CameraItem, ScannerConfig } from "./types";
 import { CameraUI } from "./CameraUI";
 import { ScannerAPI } from "./ScannerAPI";
 import { ConstraintManager } from "./ConstraintManager";
@@ -22,6 +22,7 @@ export class Camera {
     private scannerApi: ScannerAPI;
     constraintManager: ConstraintManager;
     capabilitiesManager: CapabilitiesManager;
+    config: ScannerConfig;
 
     handlers: CameraHandlers = {
         onScanSuccess: () => { },
@@ -29,24 +30,29 @@ export class Camera {
         onStateChange: () => { }
     }
 
-    constructor(parentElementId: string, handlers: CameraHandlers, readerOptions?: ReaderOptions, frameRate?: number) {
-        this.logger = new Logger("Camera", true);
+    constructor(config: ScannerConfig, handlers: CameraHandlers) {
+        this.logger = new Logger("Camera", config.logging);
         this.handlers = handlers;
+        this.config = config;
         // Build the camera interface and attach it to the DOM
-        this.ui = new CameraUI(parentElementId);
-        this.scannerApi = new ScannerAPI(readerOptions, frameRate);
+        this.ui = new CameraUI(config.parentElementId);
+        this.scannerApi = new ScannerAPI(config.readerOptions, config.frameRate);
         this.logger.log("Camera constructor complete");
         this.setCameraState(CameraState.READY);
         this.constraintManager = new ConstraintManager();
         this.capabilitiesManager = new CapabilitiesManager();
+        if (config.customConstraints) {
+            this.applyCustomConstraints(config.customConstraints);
+        }
     }
 
-    applyConstraints(constraints: MediaTrackConstraints) {
+    applyCustomConstraints(constraints: MediaTrackConstraints) {
         this.throwIfNull(this.ui.videoElement, "Video element not found");
         this.constraintManager.setConstraints(constraints);
+        this.constraintManager.applyConstraints();
     }
 
-    setCameraState(state: CameraState) {
+    private setCameraState(state: CameraState) {
         this.cameraState = state;
         this.handlers.onStateChange(state);
     }

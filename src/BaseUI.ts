@@ -84,7 +84,7 @@ const uiHandlers = {
         ui.setUiState(UIState.CAMERA_RUNNING);
     },
     stopScanning: async (ui: BaseUI) => {
-        ui.camera.stop();
+        await ui.camera.stop();
         ui.setUiState(UIState.READY);
     },
     toggleTorch: async (ui: BaseUI) => {
@@ -169,11 +169,19 @@ export class BaseUI {
         this.onScanSuccess = this.onScanSuccess.bind(this);
         this.onScanFailure = this.onScanFailure.bind(this);
 
-        this.camera = new Camera(parentElementId, {
+        this.camera = new Camera({
+            parentElementId: parentElementId,
+            readerOptions: readerOptions,
+            frameRate: 14,
+            logging: true,
+            customConstraints: {
+                facingMode: "environment"
+            }
+        }, {
             onStateChange: this.onCameraStateChange,
             onScanSuccess: this.onScanSuccess,
             onScanFailure: this.onScanFailure,
-        }, readerOptions, 14);
+        });
         this.uiContainer = this.createUiContainer();
         this.logBox = this.createLogBox();
         this.logboxLogging.log("BaseUI constructor complete");

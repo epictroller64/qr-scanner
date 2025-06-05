@@ -9,6 +9,37 @@
 
 <body>
     <div id="camera-mount"></div>
+    <button id="start-scan">Start Scan</button>
+    <script type="module">
+        import { Camera } from './dist/main.js';
+        window.addEventListener('DOMContentLoaded', async () => {
+            console.log("DOMContentLoaded");
+            // Create camera with custom config
+            const camera = new Camera({
+                parentElementId: "camera-mount",
+                logging: true,
+                readerOptions: {
+                    formats: ["QR_CODE", "AZTEC", "DATA_MATRIX", "UPC_A", "UPC_E", "EAN_13", "EAN_8", "CODE_128", "CODE_39", "ITF", "CODABAR", "MSI", "PLESSEY", "IMB", "PHARMACODE", "PDF417"]
+                }
+            }, {
+                onStateChange: (state) => {
+                    console.log("State changed", state);
+                },
+                onScanSuccess: (result) => {
+                    console.log("Scan successful", result);
+                },
+                onScanFailure: (error) => {
+                    console.log("Scan failed", error);
+                }
+            });
+            window.camera = camera;
+
+            document.getElementById("start-scan").addEventListener("click", () => {
+                // Start the camera
+                camera.startScan();
+            });
+        });
+    </script>
     <script type="module">
         import { BaseUI } from './dist/main.js';
         window.addEventListener('DOMContentLoaded', async () => {
