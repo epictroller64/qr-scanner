@@ -1,6 +1,6 @@
 # QR Code Scanner Library
 
-A flexible and easy-to-use QR code scanning library that works in web browsers. Built with zxing-wasm for reliable QR code detection.
+A flexible and easy-to-use QR code scanning library that works in web browsers. Built with [zxing-wasm](https://github.com/Sec-ant/zxing-wasm) for reliable QR code detection.
 
 ## Features
 
@@ -10,6 +10,14 @@ A flexible and easy-to-use QR code scanning library that works in web browsers. 
 - Torch/flashlight control (when available)
 - Customizable UI
 - Configurable scan settings
+- TypeScript support
+
+## Dependencies
+
+This library is built on top of [zxing-wasm](https://github.com/Sec-ant/zxing-wasm), which provides:
+- High-performance barcode scanning using WebAssembly
+- Support for multiple barcode formats
+- Cross-platform compatibility (Web, Node.js, Bun, and Deno)
 - TypeScript support
 
 ## Installation
