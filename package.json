@@ -1,7 +1,7 @@
 {
-    "name": "my-browser-package",
-    "version": "1.0.0",
-    "description": "A TypeScript-based browser package",
+    "name": "qr-scanner",
+    "version": "0.5.0",
+    "description": "A TypeScript-based browser package for QR scanning",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "scripts": {
@@ -9,9 +9,15 @@
         "watch": "webpack --watch",
         "dev": "webpack --watch"
     },
-    "keywords": [],
-    "author": "",
-    "license": "ISC",
+    "keywords": [
+        "qr",
+        "scanner",
+        "barcode",
+        "camera",
+        "webcam"
+    ],
+    "author": "epictroller64",
+    "license": "MIT",
     "devDependencies": {
         "@types/node": "^20.0.0",
         "concurrently": "^8.2.2",

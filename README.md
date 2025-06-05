@@ -14,6 +14,18 @@ A flexible and easy-to-use QR code scanning library that works in web browsers. 
 
 ## Installation
 
+### Option 1: Using GitHub Releases (Recommended)
+
+1. Go to the [Releases](https://github.com/epictroller64/qr-scanner/releases) page
+2. Download the latest release zip file
+3. Extract the `dist` folder to your project
+4. Import the library:
+```javascript
+import { BaseUI, Camera } from './path/to/dist/main.js';
+```
+
+### Option 2: Building from Source
+
 1. Clone the repository:
 ```bash
 git clone [repository-url]
