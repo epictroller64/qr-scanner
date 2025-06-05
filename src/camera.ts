@@ -41,9 +41,6 @@ export class Camera {
         this.setCameraState(CameraState.READY);
         this.constraintManager = new ConstraintManager();
         this.capabilitiesManager = new CapabilitiesManager();
-        if (config.customConstraints) {
-            this.applyCustomConstraints(config.customConstraints);
-        }
     }
 
     applyCustomConstraints(constraints: MediaTrackConstraints) {
@@ -93,6 +90,9 @@ export class Camera {
                 this.setCameraState(CameraState.SCANNING);
             }
             this.ui.setVideoStream(stream);
+            if (this.config.customConstraints) {
+                this.applyCustomConstraints(this.config.customConstraints);
+            }
             this.setCameraState(CameraState.READY);
             return stream;
         } catch (error) {
