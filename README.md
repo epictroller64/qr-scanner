@@ -31,6 +31,9 @@ This library is built on top of [zxing-wasm](https://github.com/Sec-ant/zxing-wa
 ```javascript
 import { BaseUI, Camera } from './path/to/dist/main.js';
 ```
+Screenshot from Android:
+
+![Screenshot from Android, showing the green rectangle highlighting found barcode](https://github.com/epictroller64/qr-scanner/blob/master/assets/scanner-demo.jpg)
 
 ### Option 2: Building from Source
 
