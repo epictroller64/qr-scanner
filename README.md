@@ -73,6 +73,8 @@ The simplest way to use the library is with the built-in UI:
 </script>
 ```
 
+
+
 ### Option 2: Custom Implementation
 
 For more control, you can implement your own interface using the Camera API:
